@@ -1,26 +1,4 @@
 const Post = require('../models/postModel');
-const jwt = require('jsonwebtoken');
-
-// Middleware to verify token
-exports.verifyToken = (req, res, next) => {
-    const header = req.headers.authorization;
-    if (!header) {
-        return res.status(401).json({ success: false, msg: "No token provided!" });
-    }
-
-    let token = header.split(' ')[1];
-    if (!token) {
-        return res.status(401).json({ success: false, msg: "Unauthorized access!" });
-    }
-
-    jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ success: false, msg: "Failed to authenticate token." });
-        }
-        req.userId = decoded.id;
-        next();
-    });
-};
 
 // Get all posts
 exports.getAllPosts = async (req, res) => {
@@ -140,7 +118,7 @@ exports.addLike = async (req, res) => {
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
-};
+}
 
 // Remove a like from a post
 exports.removeLike = async (req, res) => {

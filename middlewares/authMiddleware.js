@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const Alumni = require('../models/alumniModel');
 
 exports.verifyToken = (req, res, next) => {
     const header = req.headers.authorization;
@@ -26,4 +27,17 @@ exports.verifyAdmin = (req, res, next) => {
         return res.status(403).json({ success: false, msg: "Access denied: Admins only" });
     }
     next();
+};
+
+exports.verifyAlumni = async (req, res, next) => {
+    try {
+        const alumni = await Alumni.findOne({ user_id: req.userId });
+        if (!alumni) {
+            return res.status(403).json({ success: false, msg: 'Access forbidden: Not an alumni' });
+        }
+        req.alumni = alumni; // Attach alumni data to the request for later use
+        next(); // Proceed to the next middleware
+    } catch (err) {
+        res.status(500).json({ success: false, msg: err.message });
+    }
 };

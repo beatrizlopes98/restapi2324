@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 
+const likesSchema = new mongoose.Schema({
+    like_id: { type: mongoose.Schema.Types.ObjectId, required: true },
+    like_type: { type: String, enum: ['Post', 'Event'], required: true }
+});
+
 const alumniSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -8,15 +13,15 @@ const alumniSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        required: false // Initially optional
+        required: false
     },
     cargo: {
         type: String,
-        required: false // Initially optional
+        required: false
     },
     competencias: {
         type: [String],
-        required: false // Initially optional
+        required: false
     },
     percurso: {
         type: [{
@@ -24,59 +29,63 @@ const alumniSchema = new mongoose.Schema({
             startYear: Number,
             endYear: Number
         }],
-        required: false // Initially optional
+        required: false
     },
     sobre: {
         type: String,
-        required: false // Initially optional
+        required: false
     },
     localizacao: {
         cidade: {
             type: String,
-            required: false // Initially optional
+            required: false
         },
         pais: {
             type: String,
-            required: false // Initially optional
+            required: false
         }
     },
     info_contactos: {
         telefone: {
             type: String,
-            required: false // Initially optional
+            required: false
         },
         linkedin: {
             type: String,
-            required: false // Initially optional
+            required: false
         }
     },
     recomendacoes: {
         type: [String],
-        required: false // Initially optional
+        required: false
     },
     followers: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
-        required: false // Initially optional
+        required: false
     },
     friends: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
-        required: false // Initially optional
+        required: false
     },
     notificacoes: {
         type: [String],
-        required: false // Initially optional
+        required: false
     },
     pontos_xp: {
         type: Number,
-        required: false // Initially optional
+        required: false
     },
-    posts: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'Post',
-        required: false // Initially optional
-    }
+    posts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post'
+    }],
+    likes: [likesSchema],  // Changed from liked_events to liked_items
+    applied_events: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Event'
+    }]
 });
 
 const Alumni = mongoose.model('Alumni', alumniSchema);

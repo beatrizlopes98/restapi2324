@@ -1,6 +1,6 @@
 const express = require('express');
 const { getAllReports, updateReport, createReport } = require('../controllers/reportController');
-const { verifyToken, verifyAdmin} = require('../middlewares/authmiddleware');
+const { verifyToken, verifyAdmin} = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 // Route to get all reports (Admin only)

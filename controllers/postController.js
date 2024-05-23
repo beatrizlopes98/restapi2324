@@ -56,10 +56,19 @@ exports.createPost = async (req, res) => {
 // Update a post
 exports.updatePost = async (req, res) => {
     try {
-        const updatedPost = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!updatedPost) {
+        // Get the post by ID
+        const post = await Post.findById(req.params.id);
+        if (!post) {
             return res.status(404).json({ success: false, msg: 'Post not found' });
         }
+
+        // Check if the user is the owner of the post or an admin
+        if (post.user_id.toString() !== req.userId && req.userType !== 'admin') {
+            return res.status(403).json({ success: false, msg: 'You are not authorized to update this post' });
+        }
+
+        // Update the post
+        const updatedPost = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.status(200).json({ success: true, data: updatedPost });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });

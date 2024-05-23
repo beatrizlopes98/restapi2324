@@ -110,3 +110,64 @@ exports.deleteAlumniById = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+exports.followAlumni = async (req, res) => {
+    try {
+        const followerId = req.alumni._id; // ID of the alumnus giving the follow
+        const followedId = req.params.id;  // ID of the alumnus being followed
+
+        // Check if the follower and the followed alumnus are the same
+        if (followerId.toString() === followedId.toString()) {
+            return res.status(400).json({ success: false, msg: 'You cannot follow yourself' });
+        }
+
+        // Check if the follower already follows the followed alumnus
+        const follower = await Alumni.findById(followerId);
+        if (follower.friends.includes(followedId)) {
+            return res.status(400).json({ success: false, msg: 'You already follow this alumnus' });
+        }
+
+        // Update the follower's friends array
+        follower.friends.push(followedId);
+        await follower.save();
+
+        // Update the followed alumnus's followers array
+        const followed = await Alumni.findById(followedId);
+        followed.followers.push(followerId);
+        await followed.save();
+
+        res.status(200).json({ success: true, data: { follower, followed } });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: err.message });
+    }
+};
+
+exports.unfollowAlumni = async (req, res) => {
+    try {
+        const followerId = req.alumni._id; // ID of the alumnus unfollowing
+        const followedId = req.params.id;  // ID of the alumnus being unfollowed
+
+        // Check if the follower and the followed alumnus are the same
+        if (followerId.toString() === followedId.toString()) {
+            return res.status(400).json({ success: false, msg: 'You cannot unfollow yourself' });
+        }
+
+        // Check if the follower does not follow the followed alumnus
+        const follower = await Alumni.findById(followerId);
+        if (!follower.friends.includes(followedId)) {
+            return res.status(400).json({ success: false, msg: 'You do not follow this alumnus' });
+        }
+
+        // Update the follower's friends array
+        follower.friends.pull(followedId);
+        await follower.save();
+
+        // Update the followed alumnus's followers array
+        const followed = await Alumni.findById(followedId);
+        followed.followers.pull(followerId);
+        await followed.save();
+
+        res.status(200).json({ success: true, data: { follower, followed } });
+    } catch (err) {
+        res.status(500).json({ success: false, msg: err.message });
+    }
+};

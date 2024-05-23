@@ -7,5 +7,7 @@ router.get('/', alumniController.getAllAlumni);
 router.get('/:id', alumniController.getAlumniById);
 router.put('/:id', authMiddleware.verifyToken, alumniController.updateAlumniById);
 router.delete('/:id', authMiddleware.verifyToken, alumniController.deleteAlumniById);
+router.post('/:id/follow', authMiddleware.verifyToken, authMiddleware.verifyAlumni, alumniController.followAlumni);
+router.post('/:id/unfollow', authMiddleware.verifyToken, authMiddleware.verifyAlumni, alumniController.unfollowAlumni);
 
 module.exports = router;

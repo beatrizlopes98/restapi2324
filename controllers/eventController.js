@@ -65,7 +65,7 @@ exports.deleteEventById = async (req, res) => {
             return res.status(404).json({ success: false, msg: 'Event not found' });
         }
 
-        // Remove the event ID from all Alumni documents' liked_items and applied_events arrays
+        // Remove the event ID from all Alumni documents' likes and applied_events arrays
         await Alumni.updateMany(
             {},
             {

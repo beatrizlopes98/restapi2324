@@ -13,6 +13,7 @@ const alumniSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
+        enum: ['feminine', 'masculine', 'other', ''],
         required: false
     },
     cargo: {

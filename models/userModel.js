@@ -6,7 +6,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Username is required'],
         trim: true,
-        minlength: [3, 'Username must be at least 3 characters long']
+        minlength: [3, 'Username must be at least 3 characters long'],
+        validate: {
+            validator: function(v) {
+                return /^[A-Za-z]+$/.test(v); // Regular expression to match alphabetic characters only
+            },
+            message: props => `${props.value} is not a valid username! Only alphabetic characters are allowed.`
+        }
     },
     password: {
         type: String,

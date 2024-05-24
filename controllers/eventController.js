@@ -111,7 +111,7 @@ exports.likeEvent = async (req, res) => {
         // Save the event
         await event.save();
 
-        res.status(200).json({ success: true, data: event });
+        res.status(200).json({ success: true, msg: "Event liked successfully" });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
@@ -150,7 +150,7 @@ exports.applyForEvent = async (req, res) => {
         // Save both the event and alumni documents
         await Promise.all([event.save(), alumni.save()]);
 
-        res.status(200).json({ success: true, data: event });
+        res.status(200).json({ success: true, msg:"Event applied successfully" });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

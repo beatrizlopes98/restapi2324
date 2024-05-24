@@ -14,7 +14,7 @@ const reportRoutes = require("./routes/reportRoutes");
 app.use(express.json());
 
 app.use("/", userRoutes);
-app.use("/alumni", alumniRoutes);
+app.use("/alumnis", alumniRoutes);
 app.use('/posts', postRoutes);
 app.use("/events", eventRoutes);
 app.use("/reports", reportRoutes);

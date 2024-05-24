@@ -108,7 +108,7 @@ exports.addComment = async (req, res) => {
         }
         post.comments.push({ user_id: req.userId, content });
         await post.save();
-        res.status(200).json({ success: true, data: post });
+        res.status(200).json({ success: true, data: post.comments });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
@@ -126,7 +126,7 @@ exports.deleteComment = async (req, res) => {
         }
         post.comments.splice(commentIndex, 1);
         await post.save();
-        res.status(200).json({ success: true, data: post });
+        res.status(200).json({ success: true, msg: 'Comment deleted successfully' });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
@@ -158,7 +158,7 @@ exports.addLike = async (req, res) => {
         await post.save();
         await alumni.save();
 
-        res.status(200).json({ success: true, data: post });
+        res.status(200).json({ success: true, data: post.likes });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
@@ -194,7 +194,7 @@ exports.removeLike = async (req, res) => {
         await post.save();
         await alumni.save();
 
-        res.status(200).json({ success: true, data: post });
+        res.status(200).json({ success: true, msg: "Like deleted successfully" });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

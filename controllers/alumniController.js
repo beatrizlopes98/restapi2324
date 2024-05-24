@@ -135,7 +135,7 @@ exports.followAlumni = async (req, res) => {
         followed.followers.push(followerId);
         await followed.save();
 
-        res.status(200).json({ success: true, data: { follower, followed } });
+        res.status(200).json({ success: true, data: { follower_id: follower._id, follower_list: follower.friends, followed_id: followed._id, followed_list: followed.followers } });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
@@ -166,7 +166,7 @@ exports.unfollowAlumni = async (req, res) => {
         followed.followers.pull(followerId);
         await followed.save();
 
-        res.status(200).json({ success: true, data: { follower, followed } });
+        res.status(200).json({ success: true, data: { follower_id: follower._id, follower_list: follower.friends, followed_id: followed._id, followed_list: followed.followers } });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

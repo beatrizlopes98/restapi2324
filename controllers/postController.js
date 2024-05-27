@@ -1,5 +1,6 @@
 const Post = require('../models/postModel');
 const Alumni = require('../models/alumniModel');
+const Notification = require('../models/notificationModel');
 
 // Get all posts
 exports.getAllPosts = async (req, res) => {
@@ -40,18 +41,22 @@ exports.createPost = async (req, res) => {
         });
         const savedPost = await newPost.save();
 
-        // Update the Alumni document to include the new post
         const alumni = await Alumni.findOneAndUpdate(
             { user_id: req.userId },
             { $push: { posts: savedPost._id } },
             { new: true }
         );
 
+
+        alumni.pontos_xp += 20;
+        await alumni.save();
+
         res.status(201).json({ success: true, data: savedPost });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 // Update a post
 exports.updatePost = async (req, res) => {
@@ -108,11 +113,31 @@ exports.addComment = async (req, res) => {
         }
         post.comments.push({ user_id: req.userId, content });
         await post.save();
+
+        const alumni = await Alumni.findOne({ user_id: req.userId });
+        if (!alumni) {
+            return res.status(404).json({ success: false, msg: 'Alumni not found' });
+        }
+
+        alumni.pontos_xp += 5;
+        await alumni.save();
+
+        // Notify post owner
+        const postOwner = await Alumni.findOne({ user_id: post.user_id });
+        const notification = new Notification({
+            recipient: postOwner.user_id,
+            sender: alumni.user_id,
+            type: 'comment',
+            postId: post._id
+        });
+        await notification.save();
+
         res.status(200).json({ success: true, data: post.comments });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 exports.deleteComment = async (req, res) => {
     try {
@@ -145,24 +170,34 @@ exports.addLike = async (req, res) => {
             return res.status(404).json({ success: false, msg: 'Alumni not found' });
         }
 
-        // Check if the user has already liked the post
         const alreadyLiked = post.likes.some(like => like.user_id.toString() === req.userId);
         if (alreadyLiked) {
             return res.status(400).json({ success: false, msg: 'You have already liked this post' });
         }
 
-        // Add the user's like
         post.likes.push({ user_id: req.userId });
         alumni.likes.push({ like_id: post._id, like_type: 'Post' });
 
+        alumni.pontos_xp += 2;
         await post.save();
         await alumni.save();
+
+        // Notify post owner
+        const postOwner = await Alumni.findOne({ user_id: post.user_id });
+        const notification = new Notification({
+            recipient: postOwner.user_id,
+            sender: alumni.user_id,
+            type: 'like',
+            postId: post._id
+        });
+        await notification.save();
 
         res.status(200).json({ success: true, data: post.likes });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 
 // Remove a like from a post

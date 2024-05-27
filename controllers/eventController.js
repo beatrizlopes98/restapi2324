@@ -104,6 +104,7 @@ exports.likeEvent = async (req, res) => {
         // Add the like to the alumni
         alumni.likes.push({ like_type: 'Event', like_id: event._id });
         // Save the alumni
+        alumni.pontos_xp += 2;
         await alumni.save();
 
         // Update the event's likes
@@ -147,6 +148,7 @@ exports.applyForEvent = async (req, res) => {
         // Add the event's ID to the alumni's applied_events array
         alumni.applied_events.push(event._id);
 
+        alumni.pontos_xp += 15;
         // Save both the event and alumni documents
         await Promise.all([event.save(), alumni.save()]);
 

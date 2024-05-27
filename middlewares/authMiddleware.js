@@ -41,3 +41,21 @@ exports.verifyAlumni = async (req, res, next) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
+function validateYearPercurso(req, res, next) {
+    const { startYear, endYear } = req.body.percurso;
+
+    // Check if startYear is valid (not in the future)
+    const currentYear = new Date().getFullYear();
+    if (startYear > currentYear) {
+        return res.status(400).json({ success: false, msg: 'Start year cannot be in the future' });
+    }
+
+    // Check if endYear is valid (not before startYear if provided)
+    if (endYear && endYear < startYear) {
+        return res.status(400).json({ success: false, msg: 'End year cannot be before start year' });
+    }
+
+    // If no validation errors, proceed to the next middleware or route handler
+    next();
+}

@@ -3,6 +3,7 @@ const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const Post= require('../models/postModel');
 const Event = require('../models/eventModel');
+const Notification = require('../models/notificationModel');
 
 // Get all alumni (public)
 exports.getAllAlumni = async (req, res) => {
@@ -71,6 +72,9 @@ exports.updateAlumniById = async (req, res) => {
             await user.save();
         }
 
+        alumni.pontos_xp += 10;
+        await alumni.save();
+
         res.status(200).json({ success: true, data: { alumni, user: alumni.user_id ? await User.findById(alumni.user_id) : null } });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
@@ -110,41 +114,51 @@ exports.deleteAlumniById = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+// Follow
 exports.followAlumni = async (req, res) => {
     try {
-        const followerId = req.alumni._id; // ID of the alumnus giving the follow
-        const followedId = req.params.id;  // ID of the alumnus being followed
+        const follower = await Alumni.findOne({ user_id: req.userId });
+        const following = await Alumni.findById(req.params.id);
 
-        // Check if the follower and the followed alumnus are the same
-        if (followerId.toString() === followedId.toString()) {
+        if (!follower || !following) {
+            return res.status(404).json({ success: false, msg: 'Alumni not found' });
+        }
+        if (follower.toString() === following.toString()) {
             return res.status(400).json({ success: false, msg: 'You cannot follow yourself' });
         }
 
-        // Check if the follower already follows the followed alumnus
-        const follower = await Alumni.findById(followerId);
-        if (follower.friends.includes(followedId)) {
-            return res.status(400).json({ success: false, msg: 'You already follow this alumnus' });
+        if (follower.friends.includes(following._id)) {
+            return res.status(400).json({ success: false, msg: 'You already follow this alumni' });
         }
 
-        // Update the follower's friends array
-        follower.friends.push(followedId);
+        follower.friends.push(following._id);
+        following.followers.push(follower._id);
+
         await follower.save();
+        await following.save();
 
-        // Update the followed alumnus's followers array
-        const followed = await Alumni.findById(followedId);
-        followed.followers.push(followerId);
-        await followed.save();
+        const notification = new Notification({
+            recipient: following.user_id,
+            sender: follower.user_id,
+            type: 'follow'
+        });
+        await notification.save();
+        console.log(`Notification created: ${JSON.stringify(notification, null, 2)}`);
+        console.log(`Alumni being followed ID: ${following._id}`);
 
-        res.status(200).json({ success: true, data: { follower_id: follower._id, follower_list: follower.friends, followed_id: followed._id, followed_list: followed.followers } });
+        res.status(200).json({ success: true, msg: 'Followed successfully' });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
 
+
+
 exports.unfollowAlumni = async (req, res) => {
     try {
         const followerId = req.alumni._id; // ID of the alumnus unfollowing
         const followedId = req.params.id;  // ID of the alumnus being unfollowed
+
 
         // Check if the follower and the followed alumnus are the same
         if (followerId.toString() === followedId.toString()) {
@@ -153,6 +167,7 @@ exports.unfollowAlumni = async (req, res) => {
 
         // Check if the follower does not follow the followed alumnus
         const follower = await Alumni.findById(followerId);
+
         if (!follower.friends.includes(followedId)) {
             return res.status(400).json({ success: false, msg: 'You do not follow this alumnus' });
         }

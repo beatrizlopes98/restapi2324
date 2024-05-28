@@ -66,7 +66,7 @@ exports.createReport = async (req, res) => {
 // Get all reports (Admin only)
 exports.getAllReports = async (req, res) => {
     try {
-        const reports = await Report.find().populate('reporter', 'username email');
+        const reports = await Report.find({status: "Pending"}).populate('reporter', 'username email');
         res.status(200).json({ success: true, data: reports });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });

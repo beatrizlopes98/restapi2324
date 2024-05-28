@@ -85,11 +85,19 @@ exports.deletePost = async (req, res) => {
     try {
         const postId = req.params.id;
 
-        // Find the deleted post
-        const deletedPost = await Post.findByIdAndDelete(postId);
-        if (!deletedPost) {
+        // Find the post to be deleted
+        const post = await Post.findById(postId);
+        if (!post) {
             return res.status(404).json({ success: false, msg: 'Post not found' });
         }
+
+        // Check if the logged-in user is the post author or an admin
+        if (post.user_id.toString() !== req.userId && !req.isAdmin) {
+            return res.status(403).json({ success: false, msg: 'Unauthorized' });
+        }
+
+        // Delete the post
+        await Post.findByIdAndDelete(postId);
 
         // Remove the post ID from all Alumni documents' posts field
         await Alumni.updateMany(
@@ -102,6 +110,7 @@ exports.deletePost = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 // Add a comment to a post
 exports.addComment = async (req, res) => {
@@ -145,10 +154,19 @@ exports.deleteComment = async (req, res) => {
         if (!post) {
             return res.status(404).json({ success: false, msg: 'Post not found' });
         }
+
         const commentIndex = post.comments.findIndex(comment => comment._id.toString() === req.params.commentId);
         if (commentIndex === -1) {
             return res.status(404).json({ success: false, msg: 'Comment not found' });
         }
+
+        const comment = post.comments[commentIndex];
+
+        // Check if the logged-in user is the comment author or an admin
+        if (comment.user_id.toString() !== req.userId && !req.isAdmin) {
+            return res.status(403).json({ success: false, msg: 'Unauthorized' });
+        }
+
         post.comments.splice(commentIndex, 1);
         await post.save();
         res.status(200).json({ success: true, msg: 'Comment deleted successfully' });
@@ -156,6 +174,7 @@ exports.deleteComment = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 // Add a like to a post
 exports.addLike = async (req, res) => {

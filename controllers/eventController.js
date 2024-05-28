@@ -1,6 +1,20 @@
 const Event = require('../models/eventModel');
 const Alumni = require('../models/alumniModel');
 
+
+const validateDate = (date) => {
+    const parsedDate = new Date(date);
+    const currentDate = new Date();
+    // Check if the parsed date is valid and in the future
+    return !isNaN(parsedDate) && parsedDate >= currentDate.setHours(0, 0, 0, 0);
+};
+
+// Function to validate time format (HH:mm)
+const validateTime = (time) => {
+    const timePattern = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    return timePattern.test(time);
+};
+
 // Get all events
 exports.getAllEvents = async (req, res) => {
     try {
@@ -28,6 +42,15 @@ exports.getEventById = async (req, res) => {
 exports.createEvent = async (req, res) => {
     try {
         const { name, description, datetime, location, date, time } = req.body;
+
+        // Validate date and time
+        if (!validateDate(date)) {
+            return res.status(400).json({ success: false, msg: 'Invalid date format or date is in the past. Please use YYYY-MM-DD format and ensure the date is in the future.' });
+        }
+        if (!validateTime(time)) {
+            return res.status(400).json({ success: false, msg: 'Invalid time format. Please use HH:mm format.' });
+        }
+
         const newEvent = new Event({
             name,
             description,
@@ -46,7 +69,18 @@ exports.createEvent = async (req, res) => {
 // Update event by ID (Admin only)
 exports.updateEventById = async (req, res) => {
     try {
-        const { likes, ...updatedFields } = req.body; // Exclude likes from updatedFields
+        const { date, time, likes, ...updatedFields } = req.body; // Exclude likes from updatedFields
+
+        // Validate date if provided
+        if (date && !validateDate(date)) {
+            return res.status(400).json({ success: false, msg: 'Invalid date format or date is in the past. Please use YYYY-MM-DD format and ensure the date is in the future.' });
+        }
+
+        // Validate time if provided
+        if (time && !validateTime(time)) {
+            return res.status(400).json({ success: false, msg: 'Invalid time format. Please use HH:mm format.' });
+        }
+
         const updatedEvent = await Event.findByIdAndUpdate(req.params.id, updatedFields, { new: true });
         if (!updatedEvent) {
             return res.status(404).json({ success: false, msg: 'Event not found' });

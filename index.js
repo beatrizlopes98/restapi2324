@@ -11,6 +11,8 @@ const postRoutes = require('./routes/postRoutes');
 const eventRoutes = require("./routes/eventRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const statisticsRoutes = require('./routes/statisticRoutes');
+
 
 app.use(express.json());
 
@@ -20,6 +22,7 @@ app.use('/posts', postRoutes);
 app.use("/events", eventRoutes);
 app.use("/reports", reportRoutes);
 app.use("/notifications", notificationRoutes);
+app.use('/statistics', statisticsRoutes);
 
 app.listen(port, () => {
     console.log("App is running on http://localhost:" + port);

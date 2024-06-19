@@ -8,8 +8,8 @@ router.get('/:id', verifyToken, eventController.getEventById);
 router.post('/', verifyToken, verifyAdmin, eventController.createEvent);
 router.put('/:id', verifyToken, verifyAdmin, eventController.updateEventById);
 router.delete('/:id', verifyToken, verifyAdmin, eventController.deleteEventById);
-router.post('/:id/likes', verifyToken, verifyAlumni, eventController.likeEvent); // Like an event
+router.post('/:id/likes', verifyToken, verifyAlumni, eventController.likeEvent); 
 router.delete('/:id/likes', verifyToken, verifyAlumni, eventController.deleteLikeEvent);
-router.post('/:id/applies', verifyToken, verifyAlumni, eventController.applyForEvent); // Apply for an event
+router.post('/:id/applications', verifyToken, verifyAlumni, eventController.applyForEvent);
 
 module.exports = router;

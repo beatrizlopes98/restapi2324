@@ -2,23 +2,21 @@ const Notification = require('../models/notificationModel');
 
 exports.getNotifications = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-        const limit = parseInt(req.query.limit) || 10; // Default limit to 10 if not provided
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 10; 
         const skip = (page - 1) * limit;
 
-        // Build filter object based on query parameters
-        const filter = { recipient: req.userId, read: false }; // Default filter for unread notifications
+        const filter = { recipient: req.userId, read: false }; 
         if (req.query.type) {
             filter.type = req.query.type;
         }
 
-        // Query notifications with pagination and filters
         const notifications = await Notification.find(filter)
                                                .skip(skip)
                                                .limit(limit)
                                                .select('type read');
 
-        // Count total number of notifications (for pagination metadata)
+
         const totalCount = await Notification.countDocuments(filter);
 
         res.status(200).json({

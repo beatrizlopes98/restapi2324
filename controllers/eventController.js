@@ -17,22 +17,26 @@ const validateTime = (time) => {
 
 exports.getAllEvents = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
-        const limit = parseInt(req.query.limit) || 10; // Default limit to 10 if not provided
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        // Build filter object based on query parameters
         const filter = {};
         if (req.query.date) {
-            filter.date = req.query.date; // Assuming date is provided in YYYY-MM-DD format
+            const isValidDate = validateDate(req.query.date);
+            if (!isValidDate) {
+                return res.status(400).json({
+                    success: false,
+                    msg: 'Invalid date format or date is in the past. Please use YYYY-MM-DD format and ensure the date is in the future.'
+                });
+            }
+            filter.date = req.query.date;
         }
 
-        // Query events with pagination and filters
         const events = await Event.find(filter)
-                                  .skip(skip)
-                                  .limit(limit);
+            .skip(skip)
+            .limit(limit);
 
-        // Count total number of events (for pagination metadata)
         const totalCount = await Event.countDocuments(filter);
 
         res.status(200).json({
@@ -48,6 +52,7 @@ exports.getAllEvents = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 
 exports.getEventById = async (req, res) => {

@@ -17,8 +17,33 @@ const validateTime = (time) => {
 
 exports.getAllEvents = async (req, res) => {
     try {
-        const events = await Event.find();
-        res.status(200).json({ success: true, data: events });
+        const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+        const limit = parseInt(req.query.limit) || 10; // Default limit to 10 if not provided
+        const skip = (page - 1) * limit;
+
+        // Build filter object based on query parameters
+        const filter = {};
+        if (req.query.date) {
+            filter.date = req.query.date; // Assuming date is provided in YYYY-MM-DD format
+        }
+
+        // Query events with pagination and filters
+        const events = await Event.find(filter)
+                                  .skip(skip)
+                                  .limit(limit);
+
+        // Count total number of events (for pagination metadata)
+        const totalCount = await Event.countDocuments(filter);
+
+        res.status(200).json({
+            success: true,
+            data: events,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit),
+                totalItems: totalCount
+            }
+        });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

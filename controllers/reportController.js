@@ -64,17 +64,34 @@ exports.createReport = async (req, res) => {
 
 exports.getAllReports = async (req, res) => {
     try {
-        const reports = await Report.find({ status: "Pending" }).populate('reporter', 'username email');
-        
-        // Map the reports to include only the desired fields
-        const filteredReports = reports.map(report => ({
-            reportedItem: report.reportedItem,
-            _id: report._id,
-            reason: report.reason,
-            status: report.status
-        }));
+        const page = parseInt(req.query.page) || 1; // Default to page 1 if not provided
+        const limit = parseInt(req.query.limit) || 20; // Default limit to 20 if not provided
+        const skip = (page - 1) * limit;
 
-        res.status(200).json({ success: true, data: filteredReports });
+        // Build filter object based on query parameters
+        const filter = { status: "Pending" }; // Default filter for pending reports
+        if (req.query.type) {
+            filter['reportedItem.itemType'] = req.query.type;
+        }
+
+        // Query reports with pagination and filters
+        const reports = await Report.find(filter)
+                                    .skip(skip)
+                                    .limit(limit)
+                                    .populate('reporter', 'username email');
+
+        // Count total number of reports (for pagination metadata)
+        const totalCount = await Report.countDocuments(filter);
+
+        res.status(200).json({
+            success: true,
+            data: reports,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalCount / limit),
+                totalItems: totalCount
+            }
+        });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

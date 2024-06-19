@@ -33,23 +33,29 @@ exports.getLocationStatistics = async (req, res) => {
 // Employment statistics
 exports.getEmploymentStatistics = async (req, res) => {
     try {
-        const currentYear = new Date().getFullYear();
-        const employmentStats = await Alumni.aggregate([
-            { $unwind: "$percurso" },
-            {
-                $group: {
-                    _id: {
-                        isEmployed: {
-                            $cond: [{ $or: [{ $eq: ["$percurso.endYear", ""] }, { $gt: ["$percurso.endYear", currentYear] }] }, true, false]
-                        }
-                    },
-                    count: { $sum: 1 }
-                }
+        const alumni = await Alumni.find({}, 'percurso');
+
+        let currentlyEmployed = 0;
+        let notEmployed = 0;
+
+        alumni.forEach(alumnus => {
+            const isEmployed = alumnus.percurso.some(percurso => !percurso.endYear);
+            if (isEmployed) {
+                currentlyEmployed++;
+            } else {
+                notEmployed++;
             }
-        ]);
-        res.status(200).json({ success: true, data: employmentStats });
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                currentlyEmployed,
+                notEmployed
+            }
+        });
     } catch (err) {
-        handleErrors(res, err);
+        res.status(500).json({ success: false, msg: err.message });
     }
 };
 

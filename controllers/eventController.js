@@ -60,7 +60,7 @@ exports.createEvent = async (req, res) => {
             time
         });
         const savedEvent = await newEvent.save();
-        res.status(201).json({ success: true, data: savedEvent });
+        res.status(201).json({ success: true, data: savedEvent._id, msg: "Event created successfully." });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
@@ -85,7 +85,7 @@ exports.updateEventById = async (req, res) => {
         if (!updatedEvent) {
             return res.status(404).json({ success: false, msg: 'Event not found' });
         }
-        res.status(200).json({ success: true, data: updatedEvent });
+        res.status(200).json({ success: true, msg: "Event updated successfully" });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

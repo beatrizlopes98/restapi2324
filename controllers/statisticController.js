@@ -1,10 +1,12 @@
 const Alumni = require('../models/alumniModel');
 
+// Helper function to handle common errors
 const handleErrors = (res, error) => {
     console.error(error);
     res.status(500).json({ success: false, msg: error.message });
 };
 
+// Gender statistics
 exports.getGenderStatistics = async (req, res) => {
     try {
         const genderStats = await Alumni.aggregate([
@@ -16,10 +18,11 @@ exports.getGenderStatistics = async (req, res) => {
     }
 };
 
+// Location statistics
 exports.getLocationStatistics = async (req, res) => {
     try {
         const locationStats = await Alumni.aggregate([
-            { $group: { _id: "$localizacao.pais", count: { $sum: 1 } } }
+            { $group: { _id: "$localizacao.cidade", count: { $sum: 1 } } }
         ]);
         res.status(200).json({ success: true, data: locationStats });
     } catch (err) {
@@ -27,6 +30,7 @@ exports.getLocationStatistics = async (req, res) => {
     }
 };
 
+// Employment statistics
 exports.getEmploymentStatistics = async (req, res) => {
     try {
         const currentYear = new Date().getFullYear();
@@ -49,6 +53,7 @@ exports.getEmploymentStatistics = async (req, res) => {
     }
 };
 
+// Role statistics
 exports.getRoleStatistics = async (req, res) => {
     try {
         const roleStats = await Alumni.aggregate([

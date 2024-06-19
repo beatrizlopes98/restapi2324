@@ -9,13 +9,8 @@ const Notification = require('../models/notificationModel');
 exports.getAllAlumni = async (req, res) => {
     try {
         const alumni = await Alumni.find().populate('user_id', 'username email profilePicture');
-        const response = alumni.map(alumnus => ({
-            username: alumnus.user_id.username,
-            email: alumnus.user_id.email,
-            profilePicture: alumnus.user_id.profilePicture
-        }));
 
-        res.status(200).json({ success: true, data: response });
+        res.status(200).json({ success: true, data: alumni });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message || "An error occurred while fetching alumni." });
     }
@@ -181,7 +176,7 @@ exports.unfollowAlumni = async (req, res) => {
         followed.followers.pull(followerId);
         await followed.save();
 
-        res.status(200).json({ success: true, data: { follower_id: follower._id, follower_list: follower.friends, followed_id: followed._id, followed_list: followed.followers } });
+        res.status(200).json({ success: true, msg: "Unfollow successful" });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

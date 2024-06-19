@@ -66,12 +66,22 @@ exports.createReport = async (req, res) => {
 // Get all reports (Admin only)
 exports.getAllReports = async (req, res) => {
     try {
-        const reports = await Report.find({status: "Pending"}).populate('reporter', 'username email');
-        res.status(200).json({ success: true, data: reports });
+        const reports = await Report.find({ status: "Pending" }).populate('reporter', 'username email');
+        
+        // Map the reports to include only the desired fields
+        const filteredReports = reports.map(report => ({
+            reportedItem: report.reportedItem,
+            _id: report._id,
+            reason: report.reason,
+            status: report.status
+        }));
+
+        res.status(200).json({ success: true, data: filteredReports });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 // Update report and manage reported item (Admin only)
 exports.updateReport = async (req, res) => {
@@ -153,7 +163,7 @@ exports.updateReport = async (req, res) => {
             await report.save();
         }
 
-        res.status(200).json({ success: true, data: { report, updatedItem } });
+        res.status(200).json({ success: true, data: report.status  });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

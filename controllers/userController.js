@@ -25,14 +25,15 @@ exports.register = async (req, res) => {
             });
         }
 
-        user = await User.create({
+        user = new User({
             username,
             email,
             password: bcrypt.hashSync(password, 10),
             type,
         });
+        await user.save();
 
-        // Automatically create alumni profile if user type is 'alumni'
+
         if (type === 'alumni') {
             await Alumni.create({
                 user_id: user._id,
@@ -58,12 +59,14 @@ exports.register = async (req, res) => {
         });
 
     } catch (err) {
+        console.error(err);
         res.status(500).json({
             success: false, 
             msg: err.message || "Some error occurred while signing up."
         });
     }
 };
+
 
 exports.login = async (req, res) => {
     try {
@@ -76,7 +79,7 @@ exports.login = async (req, res) => {
             });
         }
 
-        let user = await User.findOne({ email });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ 
                 success: false, 
@@ -84,8 +87,8 @@ exports.login = async (req, res) => {
             });
         }
 
-        const check = await bcrypt.compare(password, user.password);
-        if (!check) {
+        const passwordMatch = await bcrypt.compare(password, user.password);
+        if (!passwordMatch) {
             return res.status(401).json({ 
                 success: false, 
                 accessToken: null, 
@@ -113,3 +116,4 @@ exports.login = async (req, res) => {
         });
     }
 };
+

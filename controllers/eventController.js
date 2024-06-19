@@ -15,7 +15,6 @@ const validateTime = (time) => {
     return timePattern.test(time);
 };
 
-// Get all events
 exports.getAllEvents = async (req, res) => {
     try {
         const events = await Event.find();
@@ -25,7 +24,7 @@ exports.getAllEvents = async (req, res) => {
     }
 };
 
-// Get event by ID
+
 exports.getEventById = async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
@@ -38,7 +37,7 @@ exports.getEventById = async (req, res) => {
     }
 };
 
-// Create an event (Admin only)
+
 exports.createEvent = async (req, res) => {
     try {
         const { name, description, datetime, location, date, time } = req.body;
@@ -66,7 +65,7 @@ exports.createEvent = async (req, res) => {
     }
 };
 
-// Update event by ID (Admin only)
+
 exports.updateEventById = async (req, res) => {
     try {
         const { date, time, likes, ...updatedFields } = req.body; // Exclude likes from updatedFields
@@ -91,7 +90,6 @@ exports.updateEventById = async (req, res) => {
     }
 };
 
-// Delete event by ID (Admin only)
 exports.deleteEventById = async (req, res) => {
     try {
         const deletedEvent = await Event.findByIdAndDelete(req.params.id);
@@ -116,7 +114,7 @@ exports.deleteEventById = async (req, res) => {
     }
 };
 
-// Like an event
+
 exports.likeEvent = async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
@@ -153,7 +151,6 @@ exports.likeEvent = async (req, res) => {
 };
 
 
-// Apply for an event
 exports.applyForEvent = async (req, res) => {
     try {
         const event = await Event.findById(req.params.id);
@@ -192,7 +189,6 @@ exports.applyForEvent = async (req, res) => {
     }
 };
 
-
 exports.deleteLikeEvent = async (req, res) => {
     try {
         // Find the event by ID
@@ -226,5 +222,6 @@ exports.deleteLikeEvent = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 
 

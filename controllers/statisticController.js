@@ -6,7 +6,6 @@ const handleErrors = (res, error) => {
     res.status(500).json({ success: false, msg: error.message });
 };
 
-// Gender statistics
 exports.getGenderStatistics = async (req, res) => {
     try {
         const genderStats = await Alumni.aggregate([
@@ -18,7 +17,7 @@ exports.getGenderStatistics = async (req, res) => {
     }
 };
 
-// Location statistics
+
 exports.getLocationStatistics = async (req, res) => {
     try {
         const locationStats = await Alumni.aggregate([
@@ -30,7 +29,6 @@ exports.getLocationStatistics = async (req, res) => {
     }
 };
 
-// Employment statistics
 exports.getEmploymentStatistics = async (req, res) => {
     try {
         const alumni = await Alumni.find({}, 'percurso');
@@ -59,7 +57,7 @@ exports.getEmploymentStatistics = async (req, res) => {
     }
 };
 
-// Role statistics
+
 exports.getRoleStatistics = async (req, res) => {
     try {
         const roleStats = await Alumni.aggregate([
@@ -70,3 +68,4 @@ exports.getRoleStatistics = async (req, res) => {
         handleErrors(res, err);
     }
 };
+

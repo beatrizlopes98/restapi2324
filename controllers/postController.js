@@ -15,6 +15,7 @@ exports.getAllPosts = async (req, res) => {
     }
 };
 
+
 // Get post by ID
 exports.getPostById = async (req, res) => {
     try {
@@ -31,6 +32,7 @@ exports.getPostById = async (req, res) => {
     }
 };
 
+// Create a post
 exports.createPost = async (req, res) => {
     try {
         const { text, image } = req.body;
@@ -47,7 +49,6 @@ exports.createPost = async (req, res) => {
             { new: true }
         );
 
-
         alumni.pontos_xp += 20;
         await alumni.save();
 
@@ -56,7 +57,6 @@ exports.createPost = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
-
 
 // Update a post
 exports.updatePost = async (req, res) => {
@@ -79,7 +79,6 @@ exports.updatePost = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
-
 // Delete a post (Including Comments and Likes)
 exports.deletePost = async (req, res) => {
     try {
@@ -111,7 +110,6 @@ exports.deletePost = async (req, res) => {
     }
 };
 
-
 // Add a comment to a post
 exports.addComment = async (req, res) => {
     try {
@@ -131,15 +129,17 @@ exports.addComment = async (req, res) => {
         alumni.pontos_xp += 5;
         await alumni.save();
 
-        // Notify post owner
-        const postOwner = await Alumni.findOne({ user_id: post.user_id });
-        const notification = new Notification({
-            recipient: postOwner.user_id,
-            sender: alumni.user_id,
-            type: 'comment',
-            postId: post._id
-        });
-        await notification.save();
+        // Notify post owner only if the commenter is not the post owner
+        if (post.user_id.toString() !== req.userId) {
+            const postOwner = await Alumni.findOne({ user_id: post.user_id });
+            const notification = new Notification({
+                recipient: postOwner.user_id,
+                sender: alumni.user_id,
+                type: 'comment',
+                postId: post._id
+            });
+            await notification.save();
+        }
 
         res.status(200).json({ success: true, data: post.comments });
     } catch (err) {
@@ -147,7 +147,7 @@ exports.addComment = async (req, res) => {
     }
 };
 
-
+// Delete a comment from a post
 exports.deleteComment = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -175,7 +175,6 @@ exports.deleteComment = async (req, res) => {
     }
 };
 
-
 // Add a like to a post
 exports.addLike = async (req, res) => {
     try {
@@ -201,23 +200,23 @@ exports.addLike = async (req, res) => {
         await post.save();
         await alumni.save();
 
-        // Notify post owner
-        const postOwner = await Alumni.findOne({ user_id: post.user_id });
-        const notification = new Notification({
-            recipient: postOwner.user_id,
-            sender: alumni.user_id,
-            type: 'like',
-            postId: post._id
-        });
-        await notification.save();
+        // Notify post owner only if the liker is not the post owner
+        if (post.user_id.toString() !== req.userId) {
+            const postOwner = await Alumni.findOne({ user_id: post.user_id });
+            const notification = new Notification({
+                recipient: postOwner.user_id,
+                sender: alumni.user_id,
+                type: 'like',
+                postId: post._id
+            });
+            await notification.save();
+        }
 
         res.status(200).json({ success: true, data: post.likes });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
-
-
 
 // Remove a like from a post
 exports.removeLike = async (req, res) => {

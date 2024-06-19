@@ -9,12 +9,12 @@ const Notification = require('../models/notificationModel');
 exports.getAllAlumni = async (req, res) => {
     try {
         const alumni = await Alumni.find().populate('user_id', 'username email profilePicture');
-
         res.status(200).json({ success: true, data: alumni });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message || "An error occurred while fetching alumni." });
     }
 };
+
 
 // Get alumni by ID
 exports.getAlumniById = async (req, res) => {
@@ -29,6 +29,7 @@ exports.getAlumniById = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+
 // Update alumni by ID
 exports.updateAlumniById = async (req, res) => {
     try {
@@ -46,8 +47,9 @@ exports.updateAlumniById = async (req, res) => {
             return res.status(403).json({ success: false, msg: 'Unauthorized' });
         }
 
-        // Update alumni data
-        alumni = await Alumni.findByIdAndUpdate(alumniId, alumniData, { new: true, runValidators: true });
+        // Validate and update alumni data
+        Object.assign(alumni, alumniData); // Update only the allowed fields
+        alumni.pontos_xp += 10; // Example of a specific update
 
         // Update user data if provided
         if (username || email || password) {
@@ -67,15 +69,16 @@ exports.updateAlumniById = async (req, res) => {
             await user.save();
         }
 
-        alumni.pontos_xp += 10;
         await alumni.save();
 
-        res.status(200).json({ success: true, data: { alumni, user: alumni.user_id ? await User.findById(alumni.user_id) : null } });
+        res.status(200).json({ success: true, data: { alumni, user: await User.findById(alumni.user_id) } });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
 
+
+// Delete alumni by ID
 // Delete alumni by ID
 exports.deleteAlumniById = async (req, res) => {
     try {
@@ -95,21 +98,19 @@ exports.deleteAlumniById = async (req, res) => {
         // Delete related data in posts
         await Post.deleteMany({ user_id: alumni.user_id });
 
-        // Delete related data in events
+        // Delete related data in events (example of updating many, might need to adjust to actual use case)
         await Event.updateMany({}, { $pull: { likes: alumni._id } });
 
         // Delete the alumni
-        const deletedAlumni = await Alumni.findByIdAndDelete(alumniId);
-        if (!deletedAlumni) {
-            return res.status(404).json({ success: false, msg: 'Alumni not found' });
-        }
+        await Alumni.findByIdAndDelete(alumniId);
 
         res.status(200).json({ success: true, msg: 'Alumni deleted successfully' });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
-// Follow
+
+// Follow alumni
 exports.followAlumni = async (req, res) => {
     try {
         const follower = await Alumni.findOne({ user_id: req.userId });
@@ -118,7 +119,8 @@ exports.followAlumni = async (req, res) => {
         if (!follower || !following) {
             return res.status(404).json({ success: false, msg: 'Alumni not found' });
         }
-        if (follower.toString() === following.toString()) {
+
+        if (follower._id.toString() === following._id.toString()) {
             return res.status(400).json({ success: false, msg: 'You cannot follow yourself' });
         }
 
@@ -138,8 +140,6 @@ exports.followAlumni = async (req, res) => {
             type: 'follow'
         });
         await notification.save();
-        console.log(`Notification created: ${JSON.stringify(notification, null, 2)}`);
-        console.log(`Alumni being followed ID: ${following._id}`);
 
         res.status(200).json({ success: true, msg: 'Followed successfully' });
     } catch (err) {
@@ -147,13 +147,11 @@ exports.followAlumni = async (req, res) => {
     }
 };
 
-
-
+// Unfollow alumni
 exports.unfollowAlumni = async (req, res) => {
     try {
         const followerId = req.alumni._id; // ID of the alumnus unfollowing
         const followedId = req.params.id;  // ID of the alumnus being unfollowed
-
 
         // Check if the follower and the followed alumnus are the same
         if (followerId.toString() === followedId.toString()) {

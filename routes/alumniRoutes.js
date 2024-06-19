@@ -5,30 +5,44 @@ const authMiddleware = require('../middlewares/authMiddleware');
 
 function validatePercurso(req, res, next) {
     const percurso = req.body.percurso;
-    if (!percurso) {
+    if (!percurso || percurso.length === 0) {
         return next();
     }
 
-    const { startYear, endYear } = percurso;
-
     const currentYear = new Date().getFullYear();
 
-    if (startYear !== undefined) {
-        if (startYear > currentYear) {
-            return res.status(400).json({ success: false, msg: 'Start year cannot be in the future. If you are currently working on this company, leave the endYear field empty.' });
+    for (let entry of percurso) {
+        const { startYear, endYear } = entry;
+
+        if (startYear !== undefined) {
+            if (startYear > currentYear) {
+                return res.status(400).json({
+                    success: false,
+                    msg: 'Start year cannot be in the future. If you are currently working at this company, leave the endYear field empty.'
+                });
+            }
         }
-    }
-    if (endYear !== undefined) {
-        if (endYear > currentYear) {
-            return res.status(400).json({ success: false, msg: 'End year cannot be in the future. If you are currently working on this company, leave the endYear field empty.' });
+
+        if (endYear !== undefined) {
+            if (endYear > currentYear) {
+                return res.status(400).json({
+                    success: false,
+                    msg: 'End year cannot be in the future. If you are currently working at this company, leave the endYear field empty.'
+                });
+            }
+        }
+
+        if (endYear !== undefined && startYear !== undefined && endYear < startYear) {
+            return res.status(400).json({
+                success: false,
+                msg: 'End year cannot be before start year.'
+            });
         }
     }
 
-    if (endYear !== undefined && startYear !== undefined && endYear < startYear) {
-        return res.status(400).json({ success: false, msg: 'End year cannot be before start year.' });
-    }
     next();
 }
+
 
 
 

@@ -3,7 +3,6 @@ const Post = require('../models/postModel');
 const mongoose = require('mongoose');
 const Alumni= require('../models/alumniModel');
 
-// Create a report
 exports.createReport = async (req, res) => {
     try {
         const { itemType, itemId, reason } = req.body;
@@ -63,7 +62,6 @@ exports.createReport = async (req, res) => {
     }
 };
 
-// Get all reports (Admin only)
 exports.getAllReports = async (req, res) => {
     try {
         const reports = await Report.find({ status: "Pending" }).populate('reporter', 'username email');
@@ -81,7 +79,6 @@ exports.getAllReports = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
-
 
 // Update report and manage reported item (Admin only)
 exports.updateReport = async (req, res) => {
@@ -141,12 +138,11 @@ exports.updateReport = async (req, res) => {
                             { new: true }
                         );
 
-                        // You may also need to update alumni's documents if you keep track of comments separately
                         // Remove the comment ID from alumni's comments array if such an array exists
-                        // await Alumni.updateMany(
-                        //     { comments: report.reportedItem.itemId },
-                        //     { $pull: { comments: report.reportedItem.itemId } }
-                        // );
+                        await Alumni.updateMany(
+                            { comments: report.reportedItem.itemId },
+                            { $pull: { comments: report.reportedItem.itemId } }
+                        );
 
                         updatedItem = post ? { deleted: true, postId: post._id, commentId: report.reportedItem.itemId } : null;
                     }
@@ -163,7 +159,7 @@ exports.updateReport = async (req, res) => {
             await report.save();
         }
 
-        res.status(200).json({ success: true, data: report.status  });
+        res.status(200).json({ success: true, data: report.status });
     } catch (err) {
         res.status(500).json({ success: false, msg: err.message });
     }

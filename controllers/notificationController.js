@@ -13,7 +13,6 @@ exports.getNotifications = async (req, res) => {
 };
 
 
-
 exports.markAsRead = async (req, res) => {
     try {
         const notification = await Notification.findById(req.params.id);

@@ -41,7 +41,7 @@ exports.getLocationStatistics = async (req, res) => {
         const totalAlumni = await Alumni.countDocuments(matchCondition);
         const locationStats = await Alumni.aggregate([
             { $match: matchCondition },
-            { $group: { _id: cidade !== undefined ? "$localizacao.cidade" : "$localizacao.pais", count: { $sum: 1 } } }
+            { $group: { _id: pais !== undefined ? "$localizacao.pais" : "$localizacao.cidade", count: { $sum: 1 } } }
         ]);
 
         res.status(200).json({ success: true, totalAlumni, data: locationStats });

@@ -8,30 +8,53 @@ const handleErrors = (res, error) => {
 
 exports.getGenderStatistics = async (req, res) => {
     try {
+        const totalAlumni = await Alumni.countDocuments();
         const genderStats = await Alumni.aggregate([
             { $group: { _id: "$gender", count: { $sum: 1 } } }
         ]);
-        res.status(200).json({ success: true, data: genderStats });
+        res.status(200).json({ success: true, totalAlumni, data: genderStats });
     } catch (err) {
         handleErrors(res, err);
     }
 };
-
 
 exports.getLocationStatistics = async (req, res) => {
     try {
+        const { cidade, pais } = req.query;
+        const matchCondition = {};
+
+        if (cidade !== undefined) {
+            if (cidade) {
+                matchCondition["localizacao.cidade"] = cidade;
+            } else {
+                matchCondition["localizacao.cidade"] = { $exists: true, $ne: null };
+            }
+        }
+        if (pais !== undefined) {
+            if (pais) {
+                matchCondition["localizacao.pais"] = pais;
+            } else {
+                matchCondition["localizacao.pais"] = { $exists: true, $ne: null };
+            }
+        }
+
+        const totalAlumni = await Alumni.countDocuments(matchCondition);
         const locationStats = await Alumni.aggregate([
-            { $group: { _id: "$localizacao.cidade", count: { $sum: 1 } } }
+            { $match: matchCondition },
+            { $group: { _id: cidade !== undefined ? "$localizacao.cidade" : "$localizacao.pais", count: { $sum: 1 } } }
         ]);
-        res.status(200).json({ success: true, data: locationStats });
+
+        res.status(200).json({ success: true, totalAlumni, data: locationStats });
     } catch (err) {
         handleErrors(res, err);
     }
 };
+
 
 exports.getEmploymentStatistics = async (req, res) => {
     try {
         const alumni = await Alumni.find({}, 'percurso');
+        const totalAlumni = alumni.length;
 
         let currentlyEmployed = 0;
         let notEmployed = 0;
@@ -47,23 +70,24 @@ exports.getEmploymentStatistics = async (req, res) => {
 
         res.status(200).json({
             success: true,
+            totalAlumni,
             data: {
                 currentlyEmployed,
                 notEmployed
             }
         });
     } catch (err) {
-        res.status(500).json({ success: false, msg: err.message });
+        handleErrors(res, err);
     }
 };
 
-
 exports.getRoleStatistics = async (req, res) => {
     try {
+        const totalAlumni = await Alumni.countDocuments();
         const roleStats = await Alumni.aggregate([
             { $group: { _id: "$cargo", count: { $sum: 1 } } }
         ]);
-        res.status(200).json({ success: true, data: roleStats });
+        res.status(200).json({ success: true, totalAlumni, data: roleStats });
     } catch (err) {
         handleErrors(res, err);
     }

@@ -36,15 +36,20 @@ exports.getNotifications = async (req, res) => {
 
 exports.markAsRead = async (req, res) => {
     try {
-        const notification = await Notification.findById(req.params.id);
+        const notificationId = req.params.id;
+        const userId = req.userId;
+
+        // Find the notification and ensure it belongs to the user
+        const notification = await Notification.findById(notificationId);
         if (!notification) {
             return res.status(404).json({ success: false, msg: 'Notification not found' });
         }
 
-        if (notification.recipient.toString() !== req.userId) {
+        if (notification.recipient.toString() !== userId) {
             return res.status(403).json({ success: false, msg: 'Unauthorized' });
         }
 
+        // Update the 'read' field directly
         notification.read = true;
         await notification.save();
 
@@ -53,3 +58,4 @@ exports.markAsRead = async (req, res) => {
         res.status(500).json({ success: false, msg: err.message });
     }
 };
+

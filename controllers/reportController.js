@@ -122,20 +122,7 @@ exports.updateReport = async (req, res) => {
         let updatedItem;
         if (action) {
             switch (action) {
-                case 'update':
-                    if (!content) {
-                        return res.status(400).json({ success: false, msg: 'Content is required to update the item' });
-                    }
-                    if (report.reportedItem.itemType === 'Post') {
-                        updatedItem = await Post.findByIdAndUpdate(report.reportedItem.itemId, { text: content }, { new: true });
-                    } else if (report.reportedItem.itemType === 'Comment') {
-                        const post = await Post.findOneAndUpdate(
-                            { 'comments._id': report.reportedItem.itemId },
-                            { $set: { 'comments.$.content': content } },
-                            { new: true }
-                        );
-                        updatedItem = post ? post.comments.id(report.reportedItem.itemId) : null;
-                    }
+                case 'review':
                     break;
                 case 'delete':
                     if (report.reportedItem.itemType === 'Post') {
